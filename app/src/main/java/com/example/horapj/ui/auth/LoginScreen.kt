@@ -1,6 +1,7 @@
 package com.example.horapj.ui.auth
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -28,6 +30,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.horapj.ui.navigation.Routes
+import com.example.horapj.ui.theme.MainBlue
 
 @Composable
 fun LoginScreen(
@@ -37,17 +40,15 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Efeito para navegar quando o login for bem-sucedido
     LaunchedEffect(key1 = uiState.loginSuccess) {
         if (uiState.loginSuccess) {
-            navController.navigate(Routes.HOME) {
+            navController.navigate(Routes.MAIN) {
                 popUpTo(Routes.LOGIN) { inclusive = true }
             }
             viewModel.onNavigationDone()
         }
     }
 
-    // Efeito para mostrar Toasts de erro
     LaunchedEffect(key1 = uiState.errorMessage) {
         uiState.errorMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -60,7 +61,7 @@ fun LoginScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Center
         ) {
             // --- Textos do seu design ---
@@ -68,18 +69,18 @@ fun LoginScreen(
                 text = "Bem-vindo!", // [cite: 15]
                 style = MaterialTheme.typography.headlineLarge
             )
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Olá! Por favor, faça login primeiro", // [cite: 16]
                 style = MaterialTheme.typography.bodyMedium
             )
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(42.dp))
 
-            // --- Campos do seu design ---
             OutlinedTextField(
                 value = uiState.email,
                 onValueChange = { viewModel.onEmailChange(it) },
-                label = { Text("Email") }, // [cite: 17]
-                placeholder = { Text("Digite seu email...") }, // [cite: 18]
+                label = { Text("Email") },
+                placeholder = { Text("Digite seu email...") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 singleLine = true
@@ -89,8 +90,8 @@ fun LoginScreen(
             OutlinedTextField(
                 value = uiState.password,
                 onValueChange = { viewModel.onPasswordChange(it) },
-                label = { Text("Senha") }, // [cite: 19]
-                placeholder = { Text("Digite sua senha...") }, // [cite: 20]
+                label = { Text("Senha") },
+                placeholder = { Text("Digite sua senha...") },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -98,32 +99,35 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextButton(
-                onClick = { /* Lógica de "Esqueci a senha" (não implementada) */ },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Text("Esqueceu sua senha?") // [cite: 23]
-            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Botões do seu design ---
             if (uiState.isLoading) {
                 CircularProgressIndicator()
             } else {
                 Button(
                     onClick = { viewModel.login() },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MainBlue)
                 ) {
-                    Text("Logar") // [cite: 21]
+                    Text("Logar")
                 }
             }
+            Column(modifier = Modifier
+                .fillMaxWidth(),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.Center) {
+                TextButton(
+                    onClick = {
+                        navController.navigate(Routes.REGISTRATION)
+                    }
 
-            TextButton(
-                onClick = {
-                    navController.navigate(Routes.REGISTRATION)
+                ) {
+                    Text(
+                        text = "Ainda não tem uma conta? Cadastre-se",
+                        color = MainBlue
+                    )
                 }
-            ) {
-                Text("Ainda não tem uma conta? Cadastre-se") // [cite: 24]
             }
         }
     }

@@ -17,8 +17,6 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    // --- Funções para atualizar o estado a partir da UI ---
-
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email, errorMessage = null) }
     }
@@ -27,15 +25,12 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
         _uiState.update { it.copy(password = password, errorMessage = null) }
     }
 
-    // <-- ADICIONE ESTA NOVA FUNÇÃO -->
     fun onCpfChange(cpf: String) {
         _uiState.update { it.copy(cpf = cpf, errorMessage = null) }
     }
 
-    // --- Funções de Lógica de Negócio (Ações do Usuário) ---
 
     fun login() {
-        // ... (função login() continua igual à anterior)
         if (uiState.value.email.isBlank() || uiState.value.password.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Email e senha são obrigatórios.") }
             return
@@ -55,9 +50,7 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
         }
     }
 
-    // <-- ATUALIZE A FUNÇÃO register() -->
     fun register() {
-        // Validação (agora inclui CPF)
         if (uiState.value.email.isBlank() || uiState.value.password.isBlank() || uiState.value.cpf.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Todos os campos são obrigatórios.") }
             return
@@ -66,11 +59,10 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
         _uiState.update { it.copy(isLoading = true) }
 
         viewModelScope.launch {
-            // Adiciona o CPF ao criar o novo usuário
             val newUser = User(
                 email = uiState.value.email.trim(),
                 password = uiState.value.password,
-                cpf = uiState.value.cpf.trim() // <-- ADICIONADO
+                cpf = uiState.value.cpf.trim()
             )
             val success = userRepository.register(newUser)
 
@@ -93,9 +85,7 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
     }
 }
 
-// A Factory (AuthViewModelFactory) continua exatamente igual
 class AuthViewModelFactory(private val repository: UserRepository) : ViewModelProvider.Factory {
-    // ... (código da factory sem alterações)
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")

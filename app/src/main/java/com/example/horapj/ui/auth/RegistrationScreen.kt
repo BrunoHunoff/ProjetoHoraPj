@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,8 +35,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.horapj.ui.navigation.Routes
+import com.example.horapj.ui.theme.MainBlue
 
-// Adicionamos esta anotação para usar o TopAppBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationScreen(
@@ -45,7 +46,6 @@ fun RegistrationScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Efeito para navegar quando o cadastro for bem-sucedido
     LaunchedEffect(key1 = uiState.registrationSuccess) {
         if (uiState.registrationSuccess) {
             Toast.makeText(context, "Cadastro realizado! Faça o login.", Toast.LENGTH_LONG).show()
@@ -56,7 +56,6 @@ fun RegistrationScreen(
         }
     }
 
-    // Efeito para mostrar Toasts de erro
     LaunchedEffect(key1 = uiState.errorMessage) {
         uiState.errorMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -65,42 +64,32 @@ fun RegistrationScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = {
-            // TopAppBar para o botão de voltar e título
-            TopAppBar(
-                title = { Text("Cadastre-se") }, // [cite: 3]
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Voltar" //
-                        )
-                    }
-                }
-            )
-        }
+
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Center
         ) {
-            // --- Textos do seu design ---
             Text(
-                text = "Facilite sua gestão de tempo na palma da sua mão.", // [cite: 5]
+                text = "Cadastre-se!",
+                style = MaterialTheme.typography.headlineLarge
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Facilite sua gestão de tempo na palma da sua mão.",
                 style = MaterialTheme.typography.bodyMedium
             )
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(42.dp))
 
-            // --- Campos do seu design (INCLUINDO CPF) ---
             OutlinedTextField(
-                value = uiState.cpf, // [cite: 6]
+                value = uiState.cpf,
                 onValueChange = { viewModel.onCpfChange(it) },
                 label = { Text("CPF") },
-                placeholder = { Text("Digite seu CPF...") }, // [cite: 7]
+                placeholder = { Text("Digite seu CPF...") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true
@@ -110,8 +99,8 @@ fun RegistrationScreen(
             OutlinedTextField(
                 value = uiState.email,
                 onValueChange = { viewModel.onEmailChange(it) },
-                label = { Text("Email") }, // [cite: 8]
-                placeholder = { Text("Digite seu email...") }, // [cite: 9]
+                label = { Text("Email") },
+                placeholder = { Text("Digite seu email...") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 singleLine = true
@@ -121,8 +110,8 @@ fun RegistrationScreen(
             OutlinedTextField(
                 value = uiState.password,
                 onValueChange = { viewModel.onPasswordChange(it) },
-                label = { Text("Senha") }, // [cite: 10]
-                placeholder = { Text("Digite sua senha...") }, // [cite: 11]
+                label = { Text("Senha") },
+                placeholder = { Text("Digite sua senha...") },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -130,25 +119,32 @@ fun RegistrationScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Botões do seu design ---
             if (uiState.isLoading) {
                 CircularProgressIndicator()
             } else {
                 Button(
                     onClick = { viewModel.register() },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MainBlue)
                 ) {
-                    Text("Criar Conta") // [cite: 12]
+                    Text("Criar Conta")
                 }
             }
 
-            TextButton(
-                onClick = {
-                    navController.popBackStack()
+            Column(modifier = Modifier
+                .fillMaxWidth(),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.Center) {
+                TextButton(
+                    onClick = {
+                        navController.popBackStack()
+                    }
+                ) {
+                    Text("Já tem uma conta? Logar", color = MainBlue)
                 }
-            ) {
-                Text("Já tem uma conta? Logar") // [cite: 13]
             }
+
+
         }
     }
 }

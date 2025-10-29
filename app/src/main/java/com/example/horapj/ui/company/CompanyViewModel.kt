@@ -19,29 +19,22 @@ class CompanyViewModel(private val repository: CompanyRepository) : ViewModel() 
     val uiState: StateFlow<CompanyUiState> = _uiState.asStateFlow()
 
     init {
-        // 2. ATUALIZE O 'init' PARA USAR O 'combine'
         viewModelScope.launch {
-            // Combina o Flow de "todas as empresas" com o Flow de "estado da UI"
-            // (especificamente para 'searchQuery')
             repository.allCompanies
                 .combine(_uiState) { companies, state ->
-                    // Filtra a lista baseado na searchQuery
                     val filteredList = if (state.searchQuery.isBlank()) {
                         companies // Se a busca estiver vazia, mostra tudo
                     } else {
-                        // Se tiver busca, filtra pelo nome
                         companies.filter {
                             it.name.contains(state.searchQuery, ignoreCase = true)
                         }
                     }
-                    // Retorna o estado atualizado com a lista filtrada
                     state.copy(companyList = filteredList)
                 }
                 .catch { exception ->
                     _uiState.update { it.copy(errorMessage = "Erro ao carregar empresas: ${exception.message}") }
                 }
                 .collect { newState ->
-                    // Emite o novo estado completo
                     _uiState.value = newState
                 }
         }
@@ -57,7 +50,6 @@ class CompanyViewModel(private val repository: CompanyRepository) : ViewModel() 
         _uiState.update { it.copy(hourlyRate = rate, errorMessage = null) }
     }
 
-    // 3. ADICIONE ESTA NOVA FUNÇÃO PARA A BUSCA
     fun onSearchQueryChange(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
     }
@@ -65,18 +57,16 @@ class CompanyViewModel(private val repository: CompanyRepository) : ViewModel() 
 
     fun loadCompanyForEdit(companyId: Int?) {
         if (companyId == null) {
-            // É um novo cadastro, reseta os campos
             _uiState.update {
                 it.copy(
                     selectedCompanyId = null,
                     companyName = "",
                     hourlyRate = "",
-                    saveSuccess = false, // <-- 4. GARANTE QUE 'saveSuccess' SEJA RESETADO
+                    saveSuccess = false,
                     errorMessage = null
                 )
             }
         } else {
-            // É uma edição, busca os dados da empresa
             viewModelScope.launch {
                 val company = repository.getCompanyById(companyId)
                 if (company != null) {
@@ -85,7 +75,7 @@ class CompanyViewModel(private val repository: CompanyRepository) : ViewModel() 
                             selectedCompanyId = company.id,
                             companyName = company.name,
                             hourlyRate = company.hourlyRate.toString(),
-                            saveSuccess = false, // <-- 5. RESETA 'saveSuccess'
+                            saveSuccess = false,
                             errorMessage = null
                         )
                     }
@@ -117,17 +107,15 @@ class CompanyViewModel(private val repository: CompanyRepository) : ViewModel() 
         viewModelScope.launch {
             try {
                 if (companyId == null) {
-                    repository.insert(company) // Novo
+                    repository.insert(company)
                 } else {
-                    repository.update(company) // Edição
+                    repository.update(company)
                 }
 
-                // Sucesso: Atualização de estado única e atômica
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         saveSuccess = true,
-                        // Efeitos do 'loadCompanyForEdit(null)' agora estão aqui:
                         selectedCompanyId = null,
                         companyName = "",
                         hourlyRate = "",
@@ -151,7 +139,6 @@ class CompanyViewModel(private val repository: CompanyRepository) : ViewModel() 
     }
 }
 
-// A Factory (CompanyViewModelFactory) continua exatamente igual
 class CompanyViewModelFactory(private val repository: CompanyRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(CompanyViewModel::class.java)) {

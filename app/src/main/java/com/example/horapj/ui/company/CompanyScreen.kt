@@ -1,6 +1,7 @@
 package com.example.horapj.ui.company
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,10 +44,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.horapj.data.entity.Company
+import com.example.horapj.ui.navigation.Routes
+import com.example.horapj.ui.theme.MainBlue
 import java.text.NumberFormat
 import java.util.Locale
 
-// Precisamos desta anotação para o TopAppBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompanyScreen(
@@ -55,27 +58,24 @@ fun CompanyScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Efeito para mostrar Toasts de erro
     LaunchedEffect(key1 = uiState.errorMessage) {
         uiState.errorMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Efeito para mostrar Toast de sucesso ao salvar
     LaunchedEffect(key1 = uiState.saveSuccess) {
         if (uiState.saveSuccess) {
             Toast.makeText(context, "Empresa salva com sucesso!", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Formata o valor para R$
     val currencyFormatter = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Adicionar Empresa") }, // [cite: 2]
+                title = { Text("Adicionar Empresa") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -95,21 +95,21 @@ fun CompanyScreen(
         ) {
 
             // --- INÍCIO DO FORMULÁRIO  ---
-            Text("Qual nome da empresa?", style = MaterialTheme.typography.labelMedium) // [cite: 3]
+            Text("Qual nome da empresa?", style = MaterialTheme.typography.labelMedium)
             OutlinedTextField(
                 value = uiState.companyName,
                 onValueChange = { viewModel.onCompanyNameChange(it) },
-                placeholder = { Text("Empresa...") }, // [cite: 4]
+                placeholder = { Text("Empresa...") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Quanto você ganha por hora?", style = MaterialTheme.typography.labelMedium) // [cite: 5]
+            Text("Quanto você ganha por hora?", style = MaterialTheme.typography.labelMedium)
             OutlinedTextField(
                 value = uiState.hourlyRate,
                 onValueChange = { viewModel.onHourlyRateChange(it) },
-                placeholder = { Text("R$...") }, // [cite: 6]
+                placeholder = { Text("R$...") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true
@@ -121,9 +121,10 @@ fun CompanyScreen(
             } else {
                 Button(
                     onClick = { viewModel.saveCompany() },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(MainBlue)
                 ) {
-                    // O botão muda de texto se estivermos editando
                     val buttonText = if (uiState.selectedCompanyId == null) {
                         "Adicionar +" //
                     } else {
@@ -133,39 +134,34 @@ fun CompanyScreen(
                 }
             }
 
-            // Botão "Cancelar Edição" que só aparece se estivermos editando
             if (uiState.selectedCompanyId != null) {
                 Button(
-                    onClick = { viewModel.loadCompanyForEdit(null) }, // Limpa o formulário
-                    modifier = Modifier.fillMaxWidth()
+                    onClick = { viewModel.loadCompanyForEdit(null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(MainBlue)
                 ) {
                     Text("Cancelar Edição")
                 }
             }
-            // --- FIM DO FORMULÁRIO ---
-
             Divider(modifier = Modifier.padding(vertical = 16.dp))
 
-            // --- INÍCIO DA BUSCA E LISTAGEM  ---
             OutlinedTextField(
                 value = uiState.searchQuery,
                 onValueChange = { viewModel.onSearchQueryChange(it) },
-                placeholder = { Text("Busque empresas já cadastradas...") }, //
+                placeholder = { Text("Busque empresas já cadastradas...") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Cabeçalho da Lista
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("ID EMPRESA", style = MaterialTheme.typography.labelSmall) // [cite: 9]
-                Text("AÇÕES", style = MaterialTheme.typography.labelSmall) // [cite: 10]
+                Text("ID EMPRESA", style = MaterialTheme.typography.labelSmall)
+                Text("AÇÕES", style = MaterialTheme.typography.labelSmall)
             }
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Lista de Empresas
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -174,9 +170,10 @@ fun CompanyScreen(
                     CompanyListItem(
                         company = company,
                         formattedRate = currencyFormatter.format(company.hourlyRate),
+                        onItemClicked = {
+                            navController.navigate(Routes.companyDetailRoute(company.id))
+                        },
                         onEditClicked = {
-                            // Ao clicar em Editar, o ViewModel carrega os dados
-                            // da empresa no formulário lá em cima.
                             viewModel.loadCompanyForEdit(company.id)
                         },
                         onDeleteClicked = {
@@ -189,19 +186,18 @@ fun CompanyScreen(
     }
 }
 
-/**
- * Um Composable separado para cada item da lista de empresas.
- */
 @Composable
 fun CompanyListItem(
     company: Company,
     formattedRate: String,
+    onItemClicked: () -> Unit,
     onEditClicked: () -> Unit,
     onDeleteClicked: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick = onItemClicked
     ) {
         Row(
             modifier = Modifier
@@ -210,7 +206,6 @@ fun CompanyListItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // ID e Nome [cite: 9, 11, 12]
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "${company.id}",
@@ -228,16 +223,15 @@ fun CompanyListItem(
                 }
             }
 
-            // Ações (Editar/Deletar) [cite: 10]
             Row {
-                IconButton(onClick = onEditClicked) {
+                IconButton(onClick = { onEditClicked() }) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Editar",
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
-                IconButton(onClick = onDeleteClicked) {
+                IconButton(onClick = { onDeleteClicked() }) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Deletar",

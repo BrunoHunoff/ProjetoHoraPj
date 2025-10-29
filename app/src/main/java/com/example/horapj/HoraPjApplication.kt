@@ -4,6 +4,7 @@ import android.app.Application
 import com.example.horapj.data.AppDatabase
 import com.example.horapj.data.repository.CompanyRepository // <-- 1. IMPORTE O NOVO REPO
 import com.example.horapj.data.repository.UserRepository
+import com.example.horapj.data.repository.TimeLogRepository
 
 class HoraPjApplication : Application() {
 
@@ -15,4 +16,6 @@ class HoraPjApplication : Application() {
 
     // <-- 2. ADICIONE ESTA LINHA PARA O NOVO REPOSITÓRIO -->
     val companyRepository: CompanyRepository by lazy { CompanyRepository(database.companyDao()) }
+
+    val timeLogRepository: TimeLogRepository by lazy { TimeLogRepository(database.timeLogDao()) }
 }

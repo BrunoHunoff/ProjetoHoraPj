@@ -5,14 +5,11 @@ import com.example.horapj.data.entity.Company
 data class CompanyUiState(
     val companyList: List<Company> = emptyList(),
 
-    // Campo para o formulário
     val companyName: String = "",
     val hourlyRate: String = "",
 
-    // Campo para a busca
-    val searchQuery: String = "", // <-- ADICIONE ESTA LINHA
+    val searchQuery: String = "",
 
-    // Controle de estado
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val selectedCompanyId: Int? = null,
